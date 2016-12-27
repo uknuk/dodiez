@@ -6,31 +6,56 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-        <Pivot Title="DoDiez">
-            <PivotItem Header="Player">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <MediaElement x:Name="Player" Height="0" Grid.Row="0"/>
-                <MediaTransportControls Grid.Row="1" HorizontalAlignment="Stretch"  
-                                        VerticalAlignment="Top" 
-                                        Width="Auto" Height ="Auto"/>
-                <StackPanel Grid.Row="2">
-                <VariableSizedWrapGrid x:Name="PTracks" Orientation="Horizontal">
-                        <TextBlock FontSize="18">Tracks:</TextBlock>
-                    </VariableSizedWrapGrid>
-                <VariableSizedWrapGrid x:Name="PAlbums" Orientation="Horizontal">
-                    <TextBlock FontSize="18">Albums:</TextBlock>
-                </VariableSizedWrapGrid>
-             </StackPanel>
-            </Grid>
+    <Page.Resources>
+        <Style x:Key="TrackStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="Blue"/>
+        </Style>
+
+        <Style x:Key="AlbumStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="Green"/>
+        </Style>
+
+        <Style x:Key="ArtStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="Blue"/>
+        </Style>
+    </Page.Resources>
+
+    <Pivot Title="DoDiez" x:Name="PControl">
+        <PivotItem Header="Player" x:Name="IPlayer">
+            <ScrollViewer>
+                <StackPanel>
+                    <MediaElement x:Name="Player" Height="0" MediaEnded="Player_OnMediaEnded"/>
+                    <GridView x:Name="VTracks">
+                        <GridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </GridView.ItemsPanel>
+                    </GridView>
+
+                    <GridView x:Name="VAlbums">
+                        <GridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </GridView.ItemsPanel>
+                    </GridView>
+                </StackPanel>
+            </ScrollViewer>
+
         </PivotItem>
 
-            <PivotItem Header="Artists">
-                <VariableSizedWrapGrid x:Name="PArtists" Orientation="Horizontal"/>
-            </PivotItem>
-        </Pivot>
+        <PivotItem Header="Artists" x:Name="IArtists">
+            <GridView x:Name="VArtists">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+            </GridView>
+        </PivotItem>
+    </Pivot>
     </Page>

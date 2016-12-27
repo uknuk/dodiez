@@ -16,6 +16,14 @@ namespace Dodiez
         public string SelArtist { get; set; }
         public string Artist { get; set; }
         public string Album { get; set; }
+        public int Position { get; set; }
+
+        private string _root;
+
+        public Player(string root)
+        {
+            _root = root;
+        }
 
         public void Selected(string album)
         {
@@ -25,7 +33,12 @@ namespace Dodiez
 
         public string TrackPath(int idx)
         {
-            return $"{Artist}\\{Album}\\{Tracks[idx]}";
+            return $"{_root}\\{Artist}\\{Album}\\{Tracks[idx]}";
+        }
+
+        public string AlbumPath()
+        {
+            return $"{_root}\\{Artist}\\{Album}";
         }
     }
 }
