@@ -1,9 +1,10 @@
-﻿<Page x:Class="Dodiez.MainPage"
+<Page x:Class="Dodiez.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dodiez"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:playback="using:Windows.Media.Playback"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -27,7 +28,8 @@
         <PivotItem Header="Player" x:Name="IPlayer">
             <ScrollViewer>
                 <StackPanel>
-                    <MediaElement x:Name="Player" Height="0" MediaEnded="Player_OnMediaEnded"/>
+                    <MediaPlayerElement x:Name ="Player" AreTransportControlsEnabled="True">
+                    </MediaPlayerElement>
                     <GridView x:Name="VTracks">
                         <GridView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -43,6 +45,7 @@
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                     </GridView>
+                    
                 </StackPanel>
             </ScrollViewer>
 
@@ -58,4 +61,4 @@
             </GridView>
         </PivotItem>
     </Pivot>
-    </Page>
+</Page>

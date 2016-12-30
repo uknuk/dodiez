@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.ViewManagement;
@@ -31,6 +33,7 @@ namespace Dodiez
     {
 
         private Player _player;
+        private MediaPlayer _mPlayer = new MediaPlayer();
 
         public MainPage()
         {
@@ -62,6 +65,10 @@ namespace Dodiez
             }
 
             VArtists.ItemsSource = buttons;
+            Player.SetMediaPlayer(_mPlayer);
+            var controls = Player.TransportControls;
+            controls.IsCompact = true;
+            _mPlayer.MediaEnded += OnMediaEnded;
         }
 
         private async void Artist_Click(object sender, RoutedEventArgs e)
@@ -127,8 +134,7 @@ namespace Dodiez
         {
             var path = _player.TrackPath(idx);
             var file = await StorageFile.GetFileFromPathAsync(path);
-            var stream = await file.OpenAsync(FileAccessMode.Read);
-            Player.SetSource(stream, file.FileType);
+            _mPlayer.Source = MediaSource.CreateFromStorageFile(file);
             _player.Position = idx;
             var btn = (Button) VTracks.Items[idx];
             btn.Foreground = new SolidColorBrush(Colors.Red);
@@ -137,10 +143,10 @@ namespace Dodiez
                 btn = (Button)VTracks.Items[idx - 1];
                 btn.Foreground = new SolidColorBrush(Colors.Blue);
             }
-            Player.Play();
+            _mPlayer.Play();
         }
 
-        private async void Player_OnMediaEnded(object sender, RoutedEventArgs e)
+        private async void OnMediaEnded(MediaPlayer player, object sender)
         {
             var idx = _player.Position + 1;
             if (idx < _player.Tracks.Count)
