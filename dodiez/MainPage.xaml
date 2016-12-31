@@ -1,4 +1,4 @@
-<Page x:Class="Dodiez.MainPage"
+﻿<Page x:Class="Dodiez.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dodiez"
@@ -25,15 +25,21 @@
     </Page.Resources>
 
     <Pivot Title="DoDiez" x:Name="PControl">
-        <PivotItem Header="Player" x:Name="IPlayer">
+        <PivotItem Header="Handler" x:Name="IPlayer">
             <ScrollViewer>
                 <StackPanel>
-                    <MediaPlayerElement x:Name ="Player" AreTransportControlsEnabled="True">
-                    </MediaPlayerElement>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox x:Name="TArtist" BorderThickness="0" Foreground="BlueViolet"/>
+                        <TextBox x:Name="TAlbum" BorderThickness="0" Foreground="Green"/>
+                        <TextBox x:Name="TSong" BorderThickness="0" Foreground="Blue"/>
+                    </StackPanel>
+                    <MediaElement x:Name ="Player" AreTransportControlsEnabled="True" 
+                                  Height="100" Width="Auto" MediaEnded="OnMediaEnded">
+                    </MediaElement>
                     <GridView x:Name="VTracks">
                         <GridView.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <ItemsWrapGrid Orientation="Horizontal"/>
+                                <WrapGrid Orientation="Horizontal"/>
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                     </GridView>

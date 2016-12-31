@@ -1,13 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Storage;
+using System.Text.RegularExpressions;
 
 namespace Dodiez
 {
-    public class Player
+    public class Handler
     {
         public List<string> Artists { get; set; } = new List<string>();
         public List<string> Albums { get; set; } = new List<string>();
@@ -20,7 +17,7 @@ namespace Dodiez
 
         private string _root;
 
-        public Player(string root)
+        public Handler(string root)
         {
             _root = root;
         }
@@ -39,6 +36,24 @@ namespace Dodiez
         public string AlbumPath()
         {
             return $"{_root}\\{Artist}\\{Album}";
+        }
+
+        public string Transform(string alb)
+        {
+            if (alb.Length < 3)
+                return alb;
+
+            const string re = @"^\d{2}[\s+|_|-]";
+            if (alb.Substring(0,2) == "M0")
+                return alb.Replace("M0", "200");
+
+            var year = Regex.Matches(alb, re);
+            if (year.Count == 0)
+                return alb;
+
+            var compare = string.Compare(year[0].ToString().Substring(0, 2), "30");
+            return (compare < 0 ? "20" : "19") + alb;
+            // works until 2030
         }
     }
 }
