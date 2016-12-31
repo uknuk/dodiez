@@ -15,6 +15,7 @@ using Windows.Storage;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
@@ -40,8 +41,9 @@ namespace Dodiez
         {
             this.Loaded += PageLoaded;
             this.InitializeComponent();
-            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+            
             ApplicationView.PreferredLaunchViewSize = new Size(1024, 768);
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
         }
 
 
@@ -59,7 +61,7 @@ namespace Dodiez
                 var button = new Button()
                 {
                     Content = dir.Name,
-                    Style = (Style) this.Resources["ArtStyle"]
+                    Style = (Style) Resources["ArtStyle"]
                 };
                 button.Click += Artist_Click;
                 buttons.Add(button);
@@ -72,40 +74,47 @@ namespace Dodiez
             controls.IsFullWindowButtonVisible = false;
             controls.BorderBrush = new SolidColorBrush(Colors.Black);
             controls.BorderThickness = new Thickness(1);
+
+            _handler.Load();
+            if (_handler.SelArtist != null)
+                await SelectArtist(_handler.SelArtist);
+
+            if (_handler.AlbumNum.HasValue)
+            {
+                _handler.Selected();
+                await SelectAlbum(_handler.AlbumNum.Value, _handler.Position.Value);
+            }
+
         }
 
-        private async void Artist_Click(object sender, RoutedEventArgs e)
+        private async Task SelectArtist(string artist)
         {
-            var button = sender as Button;
-            var artist = button.Content.ToString();
-            _handler.SelArtist = artist;
-
             var dir = await KnownFolders.MusicLibrary.GetFolderAsync(artist);
             var subdirs = await dir.GetFoldersAsync();
             var buttons = new ObservableCollection<Button>();
 
-            var albums = subdirs.Select(s => s.Name)
+            _handler.Albums = subdirs.Select(s => s.Name)
                 .OrderBy(n => _handler.Transform(n)).ToList();
 
-            foreach (var album in albums)
+            int i = 0;
+            foreach (var album in _handler.Albums)
             {
-                _handler.Albums.Add(album);
-                var btn = new Button() {
+                var btn = new Button()
+                {
                     Content = album,
-                    Style = (Style) this.Resources["AlbumStyle"],
-                    };
+                    Name = $"A{i}",
+                    Style = (Style)this.Resources["AlbumStyle"],
+                };
                 btn.Click += Album_Click;
                 buttons.Add(btn);
+                i++;
             }
             VAlbums.ItemsSource = buttons;
             PControl.SelectedItem = IPlayer;
         }
 
-        private async void Album_Click(object sender, RoutedEventArgs e)
+        private async Task SelectAlbum(int albNum, int trackNum = 0)
         {
-            var button = sender as Button;
-            var album = button.Content.ToString();
-            _handler.Selected(album);
             TArtist.Text = _handler.Artist;
             TAlbum.Text = $"{_handler.Album} ";
 
@@ -118,10 +127,10 @@ namespace Dodiez
 
             foreach (var track in _handler.Tracks)
             {
-                var btn = new Button()
+                var btn = new Button
                 {
                     Content = Path.GetFileNameWithoutExtension(track),
-                    Style = (Style) this.Resources["TrackStyle"],
+                    Style = (Style) Resources["TrackStyle"],
                     Name = i.ToString()
                 };
                 btn.Click += Track_Click;
@@ -129,7 +138,46 @@ namespace Dodiez
                 i++;
             }
             VTracks.ItemsSource = buttons;
-            await Play(0);
+            Paint(VAlbums, albNum);       
+            await Play(trackNum);
+        }
+
+        private async Task Play(int idx)
+        {
+            _handler.Restore(VTracks, _handler.Position, Colors.Blue);
+            _handler.Position = idx;
+            var path = _handler.TrackPath();
+            var file = await StorageFile.GetFileFromPathAsync(path);
+            var stream = await file.OpenAsync(FileAccessMode.Read);
+            Player.SetSource(stream, file.FileType);
+            TSong.Text = _handler.Tracks[idx];
+            _handler.Position = idx;
+            Paint(VTracks, idx);
+            _handler.Store();
+            Player.Play();
+        }
+
+        private void Paint(GridView buttons, int idx)
+        {
+            var btn = (Button) buttons.Items[idx];
+            btn.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
+        private async void Artist_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var artist = button.Content.ToString();
+            _handler.SelArtist = artist;
+            await SelectArtist(artist);
+        }
+
+        private async void Album_Click(object sender, RoutedEventArgs e)
+        {
+            _handler.Restore(VAlbums, _handler.AlbumNum, Colors.Green);
+            var button = sender as Button;
+            _handler.Selected(int.Parse(button.Name.Substring(1)));
+           
+            await SelectAlbum(_handler.AlbumNum.Value);
         }
 
         private async void Track_Click(object sender, RoutedEventArgs e)
@@ -138,31 +186,23 @@ namespace Dodiez
             await Play(int.Parse(button.Name));
         }
 
-        private async Task Play(int idx)
-        {
-            var path = _handler.TrackPath(idx);
-            var file = await StorageFile.GetFileFromPathAsync(path);
-            var stream = await file.OpenAsync(FileAccessMode.Read);
-            Player.SetSource(stream, file.FileType);
-            TSong.Text = _handler.Tracks[idx];
-            // Player.Source = MediaSource.CreateFromStorageFile(file);
-            _handler.Position = idx;
-            var btn = (Button) VTracks.Items[idx];
-            btn.Foreground = new SolidColorBrush(Colors.Red);
-            if (idx > 0)
-            {
-                btn = (Button)VTracks.Items[idx - 1];
-                btn.Foreground = new SolidColorBrush(Colors.Blue);
-            }
-            Player.Play();
-        }
 
         private async void OnMediaEnded(object sender, RoutedEventArgs e)
         {
-            var idx = _handler.Position + 1;
+            var idx = _handler.Position.Value + 1;
             if (idx < _handler.Tracks.Count)
             {
                 await Play(idx);
+            }
+            else
+            {
+                idx = _handler.AlbumNum.Value + 1;
+                if (idx < _handler.Albums.Count)
+                {
+                    _handler.Restore(VAlbums, _handler.AlbumNum, Colors.Green);
+                    _handler.Selected(idx);
+                    await SelectAlbum(idx);
+                }
             }
         }
     }
