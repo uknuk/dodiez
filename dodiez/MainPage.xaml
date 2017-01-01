@@ -8,6 +8,14 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <DataTemplate x:Key="PHeader">
+            <TextBlock Text="{Binding}" FontSize="16" />
+        </DataTemplate>
+
+        <Style x:Key="PivotStyle" TargetType="Pivot">
+            <Setter Property="HeaderTemplate" Value="{StaticResource PHeader}"/>
+        </Style>
+
         <Style x:Key="TrackStyle" TargetType="Button">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="Blue"/>
@@ -27,8 +35,8 @@
         </Style>
     </Page.Resources>
 
-    <Pivot x:Name="PControl">
-        <PivotItem Header="Player" x:Name="IPlayer">
+    <Pivot x:Name="PControl" Style="{StaticResource PivotStyle}">
+        <PivotItem FontSize="14" Header="Player" x:Name="IPlayer">
             <ScrollViewer>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
@@ -39,6 +47,8 @@
                     <MediaElement x:Name ="Player" AreTransportControlsEnabled="True" 
                                   Height="100" Width="Auto" MediaEnded="OnMediaEnded">
                     </MediaElement>
+                    
+                    <Border BorderBrush="Blue" BorderThickness="1" Width="Auto" HorizontalAlignment="Stretch" />
                     <GridView x:Name="VTracks">
                         <GridView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -46,7 +56,8 @@
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                     </GridView>
-
+                    
+                    <Border BorderBrush="Green" BorderThickness="1" Width="Auto" HorizontalAlignment="Stretch" />
                     <GridView x:Name="VAlbums">
                         <GridView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -54,13 +65,12 @@
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                     </GridView>
-                    
                 </StackPanel>
             </ScrollViewer>
 
         </PivotItem>
 
-        <PivotItem Header="Artists" x:Name="IArtists">
+        <PivotItem FontSize="14" Header="Artists" x:Name="IArtists">
             <GridView x:Name="VArtists">
                 <GridView.ItemsPanel>
                     <ItemsPanelTemplate>

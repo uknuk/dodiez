@@ -144,7 +144,7 @@ namespace Dodiez
 
         private async Task Play(int idx)
         {
-            _handler.Restore(VTracks, _handler.Position, Colors.Blue);
+            Restore(VTracks, _handler.Position);
             _handler.Position = idx;
             var path = _handler.TrackPath();
             var file = await StorageFile.GetFileFromPathAsync(path);
@@ -173,7 +173,7 @@ namespace Dodiez
 
         private async void Album_Click(object sender, RoutedEventArgs e)
         {
-            _handler.Restore(VAlbums, _handler.AlbumNum, Colors.Green);
+            Restore(VAlbums, _handler.AlbumNum);
             var button = sender as Button;
             _handler.Selected(int.Parse(button.Name.Substring(1)));
            
@@ -199,11 +199,27 @@ namespace Dodiez
                 idx = _handler.AlbumNum.Value + 1;
                 if (idx < _handler.Albums.Count)
                 {
-                    _handler.Restore(VAlbums, _handler.AlbumNum, Colors.Green);
+                    Restore(VAlbums, _handler.AlbumNum);
                     _handler.Selected(idx);
                     await SelectAlbum(idx);
                 }
             }
+        }
+
+        public void Restore(GridView buttons, int? idx)
+        {
+            if (!idx.HasValue)
+                return;
+
+            bool IsAlbums = buttons.Name == "VAlbums";
+            List<string> list = IsAlbums ? _handler.Albums : _handler.Tracks;
+
+            if (idx.Value >= list.Count)
+                return; // idx can be from previous selections
+
+            var btn = (Button)buttons.Items[idx.Value];
+            btn.Foreground = new SolidColorBrush(IsAlbums ? Colors.Green : Colors.Blue);
+
         }
     }
 }

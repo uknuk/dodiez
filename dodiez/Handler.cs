@@ -2,11 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Windows.Storage;
-using Windows.UI;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 
 namespace Dodiez
 {
@@ -27,7 +23,7 @@ namespace Dodiez
         private const string _datafile = "data.txt";
 
         public Handler(string root)
-        {
+        {         
             _root = root;
         }
 
@@ -70,8 +66,6 @@ namespace Dodiez
 
         public async void Store()
         {
-           
-
             var file = await _dir.CreateFileAsync(_datafile, CreationCollisionOption.ReplaceExisting);
             await FileIO.WriteTextAsync(file, $"{Artist}\n{AlbumNum}\n{Position}");
         }
@@ -93,16 +87,7 @@ namespace Dodiez
             SelArtist = vals[0];
             AlbumNum = int.Parse(vals[1]);
             Position = int.Parse(vals[2]);
-
         }
 
-
-        public void Restore(GridView buttons, int? idx, Color color)
-        {
-            if (!idx.HasValue || idx.Value >= Tracks.Count)
-                return; // idx can be from previous album
-            var btn = (Button) buttons.Items[idx.Value];
-            btn.Foreground = new SolidColorBrush(color);
-        }
     }
 }
