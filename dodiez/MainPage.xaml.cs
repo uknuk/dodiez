@@ -90,10 +90,10 @@ namespace Dodiez
         private async Task SelectArtist(string artist)
         {
             var dir = await KnownFolders.MusicLibrary.GetFolderAsync(artist);
-            var subdirs = await dir.GetFoldersAsync();
+            var items = await dir.GetItemsAsync();
             var buttons = new ObservableCollection<Button>();
 
-            _handler.Albums = subdirs.Select(s => s.Name)
+            _handler.Albums = items.Select(s => s.Name)
                 .OrderBy(n => _handler.Transform(n)).ToList();
 
             int i = 0;
@@ -101,9 +101,9 @@ namespace Dodiez
             {
                 var btn = new Button()
                 {
-                    Content = album,
+                    Content = Path.GetFileNameWithoutExtension(album),
                     Name = $"A{i}",
-                    Style = (Style)this.Resources["AlbumStyle"],
+                    Style = (Style) Resources["AlbumStyle"],
                 };
                 btn.Click += Album_Click;
                 buttons.Add(btn);
@@ -118,10 +118,19 @@ namespace Dodiez
             TArtist.Text = _handler.Artist;
             TAlbum.Text = $"{_handler.Album} ";
 
-            var dir = await StorageFolder.GetFolderFromPathAsync(_handler.AlbumPath());
-            var tracks = await dir.GetFilesAsync();
-            _handler.Tracks = tracks.Where(t => t.FileType == ".mp3")
-                .Select(t => t.Name).ToList();
+            if (_handler.AlbumIsFile)
+            {
+                var file = await StorageFile.GetFileFromPathAsync(_handler.AlbumPath);
+                _handler.Tracks = new List<string> { file.Name };
+            }
+            else
+            {
+                var dir = await StorageFolder.GetFolderFromPathAsync(_handler.AlbumPath);
+                var tracks = await dir.GetFilesAsync();
+                _handler.Tracks = tracks.Where(t => t.FileType == ".mp3")
+                    .Select(t => t.Name).ToList();
+            }
+
             var i = 0;
             var buttons = new ObservableCollection<Button>();
 
@@ -138,6 +147,10 @@ namespace Dodiez
                 i++;
             }
             VTracks.ItemsSource = buttons;
+            if (!_handler.Tracks.Any())
+                // ffs: move to next album
+                return;
+
             Paint(VAlbums, albNum);       
             await Play(trackNum);
         }

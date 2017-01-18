@@ -23,7 +23,7 @@ namespace Dodiez
         private const string _datafile = "data.txt";
 
         public Handler(string root)
-        {         
+        {
             _root = root;
         }
 
@@ -31,20 +31,22 @@ namespace Dodiez
         {
             if (idx.HasValue)
                 AlbumNum = idx.Value;
-                
+
             Album = Albums[AlbumNum.Value];
             Artist = SelArtist;
         }
 
         public string TrackPath()
         {
-            return $"{_root}\\{Artist}\\{Album}\\{Tracks[Position.Value]}";
+            var path = $"{_root}\\{Artist}\\{Album}";
+            if (!AlbumIsFile)
+                path += $"\\{Tracks[Position.Value]}";
+            return path;
         }
 
-        public string AlbumPath()
-        {
-            return $"{_root}\\{Artist}\\{Album}";
-        }
+        public string AlbumPath => $"{_root}\\{Artist}\\{Album}";
+
+        public bool AlbumIsFile => Regex.IsMatch(Album, @".mp3$");
 
         public string Transform(string alb)
         {
